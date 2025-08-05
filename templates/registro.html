@@ -1,0 +1,62 @@
+$def with ()
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Usuario y Niños</title>
+</head>
+<body>
+    <h1>Registro de Usuario y Niños</h1>
+    <script>
+        function agregarNino() {
+            const ninosDiv = document.getElementById('ninos');
+            const ninoHTML = `
+            <div class='nino'>
+                <label>Nombre: <input type='text' name='nombre_nino[]' required></label>
+                <label>Apellidos: <input type='text' name='apellidos_nino[]' required></label>
+                <label>Edad: <input type='number' name='edad_nino[]' min='0' required></label>
+                <label>Género:
+                    <select name='genero_nino[]' required>
+                        <option value='masculino'>Masculino</option>
+                        <option value='femenino'>Femenino</option>
+                        <option value='otro'>Otro</option>
+                    </select>
+                </label>
+                <button type='button' onclick='this.parentNode.remove()'>Eliminar</button>
+            </div>`;
+            ninosDiv.insertAdjacentHTML('beforeend', ninoHTML);
+        }
+    </script>
+    <form method="POST" action="/registro">
+        <h2>Datos del Usuario</h2>
+        <label>Nombre: <input type="text" name="nombre" required></label><br>
+        <label>Apellidos: <input type="text" name="apellidos" required></label><br>
+        <label>Correo: <input type="email" name="correo" required></label><br>
+        <label>Contraseña: <input type="password" name="contrasena" required></label><br>
+        <label>Tipo de usuario:
+            <select name="tipo_usuario" required>
+                <option value="padre/madre">Padre/Madre</option>
+                <option value="tutor">Tutor</option>
+                <option value="profesor">Profesor</option>
+            </select>
+        </label><br>
+        <h2>Datos de los Niños</h2>
+        <div id="ninos">
+            <div class="nino">
+                <label>Nombre: <input type="text" name="nombre_nino[]" required></label>
+                <label>Apellidos: <input type="text" name="apellidos_nino[]" required></label>
+                <label>Edad: <input type="number" name="edad_nino[]" min="0" required></label>
+                <label>Género:
+                    <select name="genero_nino[]" required>
+                        <option value="masculino">Masculino</option>
+                        <option value="femenino">Femenino</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+        <button type="button" onclick="agregarNino()">Agregar otro niño</button>
+        <button type="submit">Registrar</button>
+    </form>
+</body>
+</html>
