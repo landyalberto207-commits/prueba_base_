@@ -1,0 +1,25 @@
+$def with ()
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Usuario</title>
+</head>
+<body>
+    <h1>Registro de Usuario</h1>
+    <form method="POST" action="/registro_usuario">
+        <label>Nombre: <input type="text" name="nombre" required></label><br>
+        <label>Apellidos: <input type="text" name="apellidos" required></label><br>
+        <label>Correo: <input type="email" name="correo" required></label><br>
+        <label>Contraseña: <input type="password" name="contrasena" required></label><br>
+        <label>Tipo de usuario:
+            <select name="tipo_usuario" required>
+                <option value="padre/madre">Padre/Madre</option>
+                <option value="tutor">Tutor</option>
+                <option value="profesor">Profesor</option>
+            </select>
+        </label><br>
+        <button type="submit">Registrar usuario</button>
+    </form>
+</body>
+</html>

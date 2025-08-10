@@ -1,3 +1,6 @@
+class Index:
+    def GET(self):
+        return render.registro()
 import web
 import sqlite3
 import os
@@ -19,7 +22,9 @@ class RegistroUsuario:
             VALUES (?, ?, ?, ?, ?, ?)
         ''', (nombre, apellidos, correo, contrasena, fecha_registro, tipo_usuario))
         self.conn.commit()
-        return self.cursor.lastrowid
+        last_id = self.cursor.lastrowid
+        self.conn.close()
+        return last_id
 
 # Clase para manejar el registro de niños
 NINOS_DB_PATH = os.path.join(os.path.dirname(__file__), 'niños.db')
@@ -34,51 +39,71 @@ class RegistroNino:
             VALUES (?, ?, ?, ?, ?, ?)
         ''', (nombre, apellidos, edad, genero, agregar_niños, id_registro_usuario1))
         self.conn.commit()
-        return self.cursor.lastrowid
+        last_id = self.cursor.lastrowid
+        self.conn.close()
+        return last_id
 
 # Configuración de rutas web.py
 urls = (
     '/', 'Index',
     '/registro', 'Registro',
+    '/login', 'Login',
+    '/registro_completo', 'RegistroCompletoWeb',
+    '/recuperar_contrasena', 'RecuperarContrasena',
+
 )
 
-app = web.application(urls, globals())
-
-render = web.template.render('templates/')
-
-class Index:
+class RecuperarContrasena:
     def GET(self):
-        return render.registro()
-
-class Registro:
+        return render.recuperar_contrasena()
     def POST(self):
         data = web.input()
-        # DEBUG: Mostrar lo que recibe el backend
-        print('DATA RECIBIDA:', dict(data))
-        # Registro de usuario
+        correo = data.correo
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT contraseña_texto FROM registro_usuario WHERE correo=?", (correo,))
+        resultado = cursor.fetchone()
+        conn.close()
+        if resultado:
+            contrasena = resultado[0]
+            return f"Tu contraseña es: <b>{contrasena}</b> <br><a href='/login'>Volver al login</a>"
+        else:
+            return "Correo no encontrado. <a href='/recuperar_contrasena'>Intentar de nuevo</a>"
+class Login:
+    def GET(self):
+        return render.login()
+    def POST(self):
+        data = web.input()
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM registro_usuario WHERE correo=? AND contraseña_texto=?", (data.correo, data.contrasena))
+        usuario = cursor.fetchone()
+app = web.application(urls, globals())
+
+# Clase para registro conjunto
+class RegistroCompletoWeb:
+    def GET(self):
+        return render.registro()
+    def POST(self):
+        data = web.input()
         usuario = RegistroUsuario()
         id_usuario = usuario.crear_usuario(
             data.nombre, data.apellidos, data.correo, data.contrasena, data.tipo_usuario
         )
-        # Registro de niños (puede ser uno o varios)
         ninos = RegistroNino()
-        # Suponiendo que los datos de niños vienen como listas
         nombres_ninos = data.get('nombre_nino[]', [])
         apellidos_ninos = data.get('apellidos_nino[]', [])
         edades_ninos = data.get('edad_nino[]', [])
         generos_ninos = data.get('genero_nino[]', [])
-        # Normalizar a listas
         if not isinstance(nombres_ninos, list):
             nombres_ninos = [nombres_ninos]
             apellidos_ninos = [apellidos_ninos]
             edades_ninos = [edades_ninos]
             generos_ninos = [generos_ninos]
-        print('NINOS:', nombres_ninos, apellidos_ninos, edades_ninos, generos_ninos)
-        # Registrar cada niño
         for nombre, apellidos, edad, genero in zip(nombres_ninos, apellidos_ninos, edades_ninos, generos_ninos):
-            print('Registrando niño:', nombre, apellidos, edad, genero)
             ninos.crear_nino(nombre, apellidos, int(edad), genero, True, id_usuario)
-        return "Registro exitoso."
+        return render.registro_exito()
+render = web.template.render('templates/')
 
 if __name__ == "__main__":
     app.run()
